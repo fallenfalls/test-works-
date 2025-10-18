@@ -1,14 +1,100 @@
 import { useEffect, useRef } from "react";
-import { ForceGraph2D } from "react-force-graph";
 
 const MindMapViewer = ({ data }) => {
-  const graphRef = useRef();
+  const canvasRef = useRef(null);
 
   useEffect(() => {
-    if (graphRef.current) {
-      // Fit view
-      graphRef.current.zoomToFit(400);
+    if (!data || !data.nodes || data.nodes.length === 0 || !canvasRef.current) {
+      return;
     }
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Simple tree layout
+    const nodes = data.nodes.map((node, i) => ({
+      ...node,
+      x: width / 2,
+      y: 100 + (node.level || 0) * 120,
+      targetX: width / 2 + (i % 3 - 1) * 200,
+      targetY: 100 + (node.level || 0) * 120,
+    }));
+
+    // Distribute nodes horizontally based on level
+    const nodesByLevel = {};
+    nodes.forEach((node) => {
+      const level = node.level || 0;
+      if (!nodesByLevel[level]) nodesByLevel[level] = [];
+      nodesByLevel[level].push(node);
+    });
+
+    Object.keys(nodesByLevel).forEach((level) => {
+      const levelNodes = nodesByLevel[level];
+      const spacing = width / (levelNodes.length + 1);
+      levelNodes.forEach((node, i) => {
+        node.x = spacing * (i + 1);
+        node.targetX = spacing * (i + 1);
+      });
+    });
+
+    // Draw links
+    if (data.links) {
+      data.links.forEach((link) => {
+        const source = nodes.find((n) => n.id === link.source);
+        const target = nodes.find((n) => n.id === link.target);
+        if (source && target) {
+          ctx.beginPath();
+          ctx.moveTo(source.x, source.y);
+          ctx.lineTo(target.x, target.y);
+          ctx.strokeStyle = "#94A3B8";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      });
+    }
+
+    // Draw nodes
+    nodes.forEach((node) => {
+      const level = node.level || 0;
+      const color = level === 0 ? "#4F46E5" : "#818CF8";
+
+      // Draw node circle
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, 20, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Draw label
+      ctx.font = "14px Inter";
+      ctx.fillStyle = "#1F2937";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const maxWidth = 180;
+      const words = node.name.split(" ");
+      let line = "";
+      let y = node.y + 30;
+
+      words.forEach((word) => {
+        const testLine = line + word + " ";
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && line !== "") {
+          ctx.fillText(line, node.x, y);
+          line = word + " ";
+          y += 18;
+        } else {
+          line = testLine;
+        }
+      });
+      ctx.fillText(line, node.x, y);
+    });
   }, [data]);
 
   if (!data || !data.nodes || data.nodes.length === 0) {
@@ -19,58 +105,13 @@ const MindMapViewer = ({ data }) => {
     );
   }
 
-  // Transform data for react-force-graph
-  const graphData = {
-    nodes: data.nodes.map((node) => ({
-      id: node.id,
-      name: node.name,
-      level: node.level || 0,
-    })),
-    links: data.links || [],
-  };
-
   return (
-    <div className="w-full h-[600px] border border-gray-200 rounded-lg overflow-hidden">
-      <ForceGraph2D
-        ref={graphRef}
-        graphData={graphData}
-        nodeLabel="name"
-        nodeAutoColorBy="level"
-        nodeCanvasObject={(node, ctx, globalScale) => {
-          const label = node.name;
-          const fontSize = 14 / globalScale;
-          ctx.font = `${fontSize}px Inter`;
-          const textWidth = ctx.measureText(label).width;
-          const bckgDimensions = [textWidth, fontSize].map((n) => n + fontSize * 0.4);
-
-          // Draw node background
-          ctx.fillStyle = node.level === 0 ? "#4F46E5" : "#818CF8";
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, 8, 0, 2 * Math.PI, false);
-          ctx.fill();
-
-          // Draw label background
-          ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-          ctx.fillRect(
-            node.x - bckgDimensions[0] / 2,
-            node.y + 12,
-            bckgDimensions[0],
-            bckgDimensions[1]
-          );
-
-          // Draw label text
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillStyle = "#1F2937";
-          ctx.fillText(label, node.x, node.y + 12 + bckgDimensions[1] / 2);
-        }}
-        linkColor={() => "#94A3B8"}
-        linkWidth={2}
-        linkDirectionalParticles={2}
-        linkDirectionalParticleWidth={2}
-        linkDirectionalParticleSpeed={0.005}
-        cooldownTicks={100}
-        onEngineStop={() => graphRef.current && graphRef.current.zoomToFit(400)}
+    <div className="w-full h-[600px] border border-gray-200 rounded-lg overflow-hidden bg-white">
+      <canvas
+        ref={canvasRef}
+        width={1000}
+        height={600}
+        className="w-full h-full"
       />
     </div>
   );
