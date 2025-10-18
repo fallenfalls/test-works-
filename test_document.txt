@@ -1,0 +1,15 @@
+Test Document for StudyAssist
+
+This is a sample document for testing the StudyAssist application.
+It contains educational content about artificial intelligence and machine learning.
+
+Key Topics:
+1. Machine Learning Fundamentals
+2. Natural Language Processing
+3. Computer Vision
+4. Deep Learning Networks
+
+The application should be able to extract this text and provide AI-powered features
+such as translation, summarization, mind maps, and personalized examples.
+
+This content will help test the various AI capabilities of the StudyAssist platform.
