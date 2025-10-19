@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Globe, Brain, Lightbulb, Volume2 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const AUTH_URL = process.env.REACT_APP_AUTH_URL || "https://auth.emergentagent.com";
 
 const Landing = ({ onAuthSuccess }) => {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ const Landing = ({ onAuthSuccess }) => {
 
   const handleLogin = () => {
     const redirectUrl = `${window.location.origin}/dashboard`;
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(
+    window.location.href = `${AUTH_URL}/?redirect=${encodeURIComponent(
       redirectUrl
     )}`;
   };
