@@ -270,10 +270,9 @@ def main():
     
     tester = StudyAssistAPITester()
     
-    # Create test user and session
-    if not tester.create_test_user_and_session():
-        print("❌ Failed to create test user. Exiting.")
-        return 1
+    # Use existing test user and session
+    print(f"🔧 Using existing test session: {tester.session_token}")
+    print(f"🔧 Using existing test user: {tester.user_id}")
     
     # Run authentication tests
     print("\n📋 Testing Authentication...")
