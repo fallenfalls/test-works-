@@ -9,8 +9,8 @@ class StudyAssistAPITester:
     def __init__(self, base_url="https://studyassist-12.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
-        self.session_token = None
-        self.user_id = None
+        self.session_token = "test_session_1760876722094"  # Use provided test session
+        self.user_id = "test-user-1760876722094"  # Use provided test user
         self.tests_run = 0
         self.tests_passed = 0
         self.document_id = None
