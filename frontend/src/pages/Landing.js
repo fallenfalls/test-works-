@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Globe, Brain, Lightbulb, Volume2 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const AUTH_URL = process.env.REACT_APP_AUTH_URL || "https://auth.emergentagent.com";
+const AUTH_URL = process.env.REACT_APP_AUTH_URL;
 
 const Landing = ({ onAuthSuccess }) => {
   const navigate = useNavigate();
