@@ -245,15 +245,30 @@ async def upload_document(
         # Read PDF
         pdf_bytes = await file.read()
         pdf_file = io.BytesIO(pdf_bytes)
-        reader = PdfReader(pdf_file)
+        
+        try:
+            reader = PdfReader(pdf_file)
+        except Exception as e:
+            logger.error(f"Error reading PDF: {e}")
+            raise HTTPException(status_code=400, detail="El archivo PDF no se pudo leer. Asegúrate de que sea un PDF válido.")
         
         # Extract text from all pages
         text_content = ""
-        for page in reader.pages:
-            text_content += page.extract_text() + "\n"
+        for page_num, page in enumerate(reader.pages):
+            try:
+                page_text = page.extract_text()
+                if page_text:
+                    text_content += page_text + "\n"
+            except Exception as e:
+                logger.warning(f"Error extracting text from page {page_num}: {e}")
+                continue
         
+        # If no text could be extracted, provide helpful message
         if not text_content.strip():
-            raise HTTPException(status_code=400, detail="Could not extract text from PDF")
+            raise HTTPException(
+                status_code=400, 
+                detail="No se pudo extraer texto del PDF. El documento puede estar escaneado (imagen) o protegido. Intenta con un PDF que contenga texto seleccionable."
+            )
         
         # Detect language
         try:
@@ -274,11 +289,14 @@ async def upload_document(
         doc_dict['uploaded_at'] = doc_dict['uploaded_at'].isoformat()
         await db.documents.insert_one(doc_dict)
         
+        logger.info(f"Document uploaded successfully: {document.id}")
         return document
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error uploading document: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error al procesar el documento: {str(e)}")
 
 
 @api_router.get("/documents", response_model=List[Document])
