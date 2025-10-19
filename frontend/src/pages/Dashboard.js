@@ -46,6 +46,12 @@ const Dashboard = ({ user, onLogout }) => {
       return;
     }
 
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("El archivo es demasiado grande. Tamaño máximo: 10MB");
+      return;
+    }
+
     setUploading(true);
     const formData = new FormData();
     formData.append("file", file);
@@ -57,9 +63,14 @@ const Dashboard = ({ user, onLogout }) => {
         },
       });
       toast.success("Documento cargado exitosamente");
+      // Reset file input
+      event.target.value = "";
+      // Refresh document list
       fetchDocuments();
     } catch (error) {
-      toast.error("Error al cargar el documento");
+      console.error("Upload error:", error);
+      const errorMessage = error.response?.data?.detail || "Error al cargar el documento";
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
     }
