@@ -12,14 +12,17 @@ const Landing = ({ onAuthSuccess }) => {
   useEffect(() => {
     // Check if we have a session_id in the URL fragment
     const hash = window.location.hash;
+    console.log("URL hash:", hash);
     if (hash && hash.includes("session_id=")) {
       const sessionId = hash.split("session_id=")[1].split("&")[0];
+      console.log("Processing session ID:", sessionId);
       processSessionId(sessionId);
     }
   }, []);
 
   const processSessionId = async (sessionId) => {
     try {
+      console.log("Calling backend to process session...");
       const response = await fetch(`${BACKEND_URL}/api/auth/session-data`, {
         method: "POST",
         headers: {
@@ -28,12 +31,19 @@ const Landing = ({ onAuthSuccess }) => {
         credentials: "include",
       });
 
+      console.log("Backend response status:", response.status);
+      
       if (response.ok) {
+        const data = await response.json();
+        console.log("Session processed successfully:", data);
         // Clear the hash
         window.location.hash = "";
         // Trigger auth check
         await onAuthSuccess();
         navigate("/dashboard");
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to process session:", errorData);
       }
     } catch (error) {
       console.error("Error processing session:", error);
