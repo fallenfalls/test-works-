@@ -41,7 +41,7 @@ const Landing = ({ onAuthSuccess }) => {
   };
 
   const handleLogin = () => {
-    const redirectUrl = `${window.location.origin}/dashboard`;
+    const redirectUrl = `${window.location.origin}/`;
     window.location.href = `${AUTH_URL}/?redirect=${encodeURIComponent(
       redirectUrl
     )}`;
