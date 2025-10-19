@@ -34,17 +34,17 @@ class StudyAssistAPITester:
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=test_headers)
+                response = requests.get(url, headers=test_headers, cookies=cookies)
             elif method == 'POST':
                 if files:
                     # Remove Content-Type for file uploads
                     if 'Content-Type' in test_headers:
                         del test_headers['Content-Type']
-                    response = requests.post(url, files=files, headers=test_headers)
+                    response = requests.post(url, files=files, headers=test_headers, cookies=cookies)
                 else:
-                    response = requests.post(url, json=data, headers=test_headers)
+                    response = requests.post(url, json=data, headers=test_headers, cookies=cookies)
             elif method == 'PUT':
-                response = requests.put(url, json=data, headers=test_headers)
+                response = requests.put(url, json=data, headers=test_headers, cookies=cookies)
 
             success = response.status_code == expected_status
             if success:
